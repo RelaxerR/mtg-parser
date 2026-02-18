@@ -41,7 +41,7 @@ class ExcelExporter:
         filepath = self._make_filename(len(cards))
         try:
             df.to_excel(filepath, index=False)
-            print(f"💾 Сохранено: {filepath}")
+            print(f"💾 Сохранено: \"{filepath}\"")
             return filepath
         except Exception as e:
             print(f"❌ Ошибка экспорта: {e}")

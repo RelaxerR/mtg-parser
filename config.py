@@ -22,11 +22,17 @@ SELECTORS = {
 
 # === Формулы расчёта баллов ===
 MANA_COST_RULES = {
+    # Универсальная мана {0}, {1}, {2}...
     "generic": {0: 0, 1: 1, 2: 2, 3: 3, 4: 5, 5: 8, 6: 11},
     "generic_linear_start": 6,  # от 7+ применяется линейная формула
     "generic_linear_base": 11,
     "generic_linear_step": 3,
-    "colored_cost": 2,  # цена за {W}/{U}/{B}/{R}/{G}
+    
+    # Цветная мана {W}, {W}{W}, {W}{W}{W}...
+    "colored_base": {1: 2, 2: 5, 3: 11},  # 1=2, 2=5, 3=11
+    "colored_linear_start": 3,  # от 4+ применяется линейная формула
+    "colored_linear_base": 11,
+    "colored_linear_step": 6,  # 11 + 6*(N-3) для 4+
 }
 
 PT_MULTIPLIER = 2  # коэффициент для P/T: (P+T) * 2
