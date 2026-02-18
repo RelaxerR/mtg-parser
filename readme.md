@@ -181,8 +181,8 @@ MIT License — см. файл LICENSE для деталей.
 
 ## 📬 Контакты
 
-Автор: Vyacheslav Kiselev
-Email: relaxerrkis@gmail.com
-Проект: github.com/relaxerr/mtg-analyzer
+- Автор: Vyacheslav Kiselev
+- Email: relaxerrkis@gmail.com
+- Проект: github.com/relaxerr/mtg-analyzer
 
 ---
