@@ -36,24 +36,28 @@ class Card:
         total = 0
         symbols = re.findall(r'{(.*?)}', self.mana_cost)
         
-        # Считаем количество цветной маны по каждому цвету
-        color_counts = {color: 0 for color in self.MANA_COLORS}
+        # Считаем универсальную и цветную ману отдельно
+        generic_total = 0  # Сумма всех цифровых значений
+        colored_total = 0  # Счётчик всех цветных символов (включая гибридные)
         
         for sym in symbols:
             if sym.isdigit():
-                # Универсальная мана: {0}, {1}, {2}...
-                total += self._calc_generic_mana(int(sym))
+                # Универсальная мана: {0}, {1}, {2}... — суммируем значения
+                generic_total += int(sym)
             elif '/' in sym:
-                # Гибридная мана {W/U} или спец. символы — игнорируется
-                continue
+                # Гибридная мана {W/U}, {2/W} и т.д. — считаем как 1 цветной символ
+                colored_total += 1
             elif sym.upper() in self.MANA_COLORS:
-                # Цветная мана: {W}, {G}, {B}...
-                color_counts[sym.upper()] += 1
+                # Обычная цветная мана: {W}, {G}, {B}...
+                colored_total += 1
+            # Специальные символы {T}, {S}, {X} игнорируются
         
-        # Рассчитываем стоимость цветной маны для каждого цвета
-        for color, count in color_counts.items():
-            if count > 0:
-                total += self._calc_colored_mana(count)
+        # Рассчитываем стоимость по единой формуле
+        total = 0
+        if generic_total > 0:
+            total += self._calc_generic_mana(generic_total + colored_total)
+        if colored_total > 0:
+            total += self._calc_colored_mana(colored_total)
         
         return total
     
