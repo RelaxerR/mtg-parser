@@ -62,7 +62,6 @@ class CardDownloader:
         """
         results = []
         
-        # Создаём прогресс-бар с tqdm
         with tqdm(
             total=count,
             desc="📥 Загрузка карт",
@@ -84,3 +83,62 @@ class CardDownloader:
                 time.sleep(self.delay)
         
         return results
+    
+    def load_from_cache(self, limit: Optional[int] = None) -> List[Tuple[str, str]]:
+        """
+        Загружает карты из локального кэша HTML.
+        
+        Args:
+            limit: Максимальное количество карт для загрузки (None = все).
+            
+        Returns:
+            List[Tuple]: Список кортежей (html_content, url).
+        """
+        html_files = sorted(self.cache_dir.glob("card_*.html"))
+        
+        if not html_files:
+            print("⚠️ Кэш пуст — нет сохранённых страниц.")
+            return []
+        
+        if limit:
+            html_files = html_files[:limit]
+        
+        results = []
+        print(f"📂 Найдено {len(html_files)} файлов в кэше")
+        
+        with tqdm(
+            total=len(html_files),
+            desc="📂 Загрузка из кэша",
+            unit="файл",
+            colour="cyan",
+            ncols=80
+        ) as pbar:
+            for filepath in html_files:
+                try:
+                    html_content = filepath.read_text(encoding='utf-8')
+                    # Извлекаем URL из имени файла
+                    slug = filepath.stem.replace("card_", "")
+                    url = f"https://scryfall.com/card/{slug}"
+                    results.append((html_content, url))
+                    pbar.update(1)
+                except Exception as e:
+                    print(f"⚠️ Ошибка чтения {filepath.name}: {e}")
+                    pbar.update(1)
+        
+        return results
+    
+    def get_cache_count(self) -> int:
+        """Возвращает количество файлов в кэше."""
+        return len(list(self.cache_dir.glob("card_*.html")))
+    
+    def clear_cache(self) -> int:
+        """
+        Очищает кэш HTML-файлов.
+        
+        Returns:
+            int: Количество удалённых файлов.
+        """
+        html_files = list(self.cache_dir.glob("card_*.html"))
+        for filepath in html_files:
+            filepath.unlink()
+        return len(html_files)
