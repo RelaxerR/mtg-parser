@@ -41,7 +41,7 @@
 
 ```bash
 # Клонируйте репозиторий
-git clone https://github.com/yourusername/mtg-analyzer.git
+git clone https://github.com/relaxerr/mtg-analyzer.git
 cd mtg-analyzer
 
 # Создайте виртуальное окружение
