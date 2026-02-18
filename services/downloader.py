@@ -4,6 +4,7 @@ import time
 import requests
 from pathlib import Path
 from typing import Optional, List, Tuple
+from tqdm import tqdm
 from config import SCRYFALL_RANDOM_URL, REQUEST_DELAY, REQUEST_TIMEOUT, DIR_HTML_CACHE
 
 
@@ -50,15 +51,36 @@ class CardDownloader:
             return None
     
     def fetch_batch(self, count: int) -> List[Tuple[str, str]]:
-        """Загружает пакет карт с задержкой между запросами."""
+        """
+        Загружает пакет карт с прогресс-баром.
+        
+        Args:
+            count: Количество карт для загрузки.
+            
+        Returns:
+            List[Tuple]: Список кортежей (html_content, url).
+        """
         results = []
-        for i in range(count):
-            print(f"📥 [{i+1}/{count}] ", end="", flush=True)
-            card = self.fetch_one()
-            if card:
-                results.append(card)
-                print("✅")
-            else:
-                print("❌")
-            time.sleep(self.delay)
+        
+        # Создаём прогресс-бар с tqdm
+        with tqdm(
+            total=count,
+            desc="📥 Загрузка карт",
+            unit="карта",
+            colour="green",
+            ncols=80
+        ) as pbar:
+            for i in range(count):
+                card = self.fetch_one()
+                
+                if card:
+                    results.append(card)
+                    pbar.set_postfix({"✅": len(results), "❌": i + 1 - len(results)})
+                    pbar.update(1)
+                else:
+                    pbar.set_postfix({"✅": len(results), "❌": i + 1 - len(results)})
+                    pbar.update(1)
+                
+                time.sleep(self.delay)
+        
         return results
