@@ -2,6 +2,9 @@ import requests
 import time
 import os
 
+import pandas as pd
+
+from datetime import datetime
 from bs4 import BeautifulSoup
 
 class Card:
@@ -11,12 +14,47 @@ class Card:
         self.text = text
         self.power_toughness = power_toughness
 
+    def to_dict(self):
+        """Превращает объект в словарь для Pandas"""
+        return {
+            "Название": self.name,
+            "Мана-кост": self.mana_cost,
+            "Описание": self.text,
+            "P/T": self.power_toughness
+        }
+
     def __repr__(self):
         return f"Card(Name: {self.name}, Cost: {self.mana_cost}, P/T: {self.power_toughness})"
 
 class ScryfallParser:
     def __init__(self):
         self.cards_list = []
+
+    def save_to_excel(self):
+        """Создает DataFrame и сохраняет его в Excel с динамическим именем"""
+        if not self.cards_list:
+            print("Список карт пуст, нечего сохранять.")
+            return
+
+        # 1. Создаем папку results, если её нет
+        if not os.path.exists('results'):
+            os.makedirs('results')
+
+        # 2. Формируем имя файла: MTG dd-mm-yy N cards.xlsx
+        current_date = datetime.now().strftime("%d-%m-%y")
+        n_cards = len(self.cards_list)
+        filename = f"results/MTG {current_date} {n_cards} cards.xlsx"
+
+        # 3. Создаем данные для таблицы
+        data = [card.to_dict() for card in self.cards_list]
+        df = pd.DataFrame(data)
+        
+        # 4. Сохраняем
+        try:
+            df.to_excel(filename, index=False)
+            print(f"Данные успешно сохранены в: {filename}")
+        except Exception as e:
+            print(f"Ошибка при сохранении Excel: {e}")
 
     def parse_card_page(self, html_content):
         """Основной метод анализа страницы"""
@@ -115,6 +153,7 @@ def download_and_parse_cards(n):
         time.sleep(0.1)
     
     # Возвращаем итоговый список объектов Card
+    parser.save_to_excel()
     return parser.cards_list
 
 if __name__ == "__main__":
