@@ -1,3 +1,4 @@
+import re
 import requests
 import time
 import os
@@ -15,14 +16,58 @@ class Card:
         self.power_toughness = power_toughness
         self.url = url
 
-    def to_dict(self):
-        """Превращает объект в словарь для Pandas"""
+    def _get_mana_points(self):
+        """Вычисляет стоимость маны по таблице"""
+        total_points = 0
+        # Ищем всё, что в фигурных скобках, например {3}, {W}, {U}
+        symbols = re.findall(r'{(.*?)}', self.mana_cost)
+        
+        for s in symbols:
+            if s.isdigit(): # Обычная мана
+                val = int(s)
+                if val <= 3: total_points += val
+                elif val == 4: total_points += 5
+                elif val == 5: total_points += 8
+                elif val == 6: total_points += 11
+                else: total_points += 11 + (val - 6) * 3
+            elif s.upper() in ['W', 'U', 'B', 'R', 'G']: # Цветная мана
+                total_points += 2 # Каждая цветная = 2 очка
+        return total_points
+
+    def _get_pt_points(self):
+        """Разбивает P/T (2/2) на сумму (2+2=4)"""
+        try:
+            # Убираем лишнее, делим по слешу
+            parts = self.power_toughness.split('/')
+            p = int(re.sub(r'[^0-9]', '', parts[0])) # Оставляем только цифры
+            t = int(re.sub(r'[^0-9]', '', parts[1]))
+            return p * 2 + t * 2
+        except:
+            return 0
+
+    def to_dict(self, row_index):
+        """Превращает объект в словарь для Pandas с корректными ссылками на столбцы"""
+        mana_pts = self._get_mana_points()
+        pt_pts = self._get_pt_points()
+
+        # Формулы Excel:
+        # Столбец I (Итоговая мощь) = G (Сила) + H (Способности)
+        formula_power = f"=G{row_index}+H{row_index}"
+        
+        # Столбец J (Баланс) = I (Итоговая мощь) - F (Стоимость маны)
+        formula_balance = f"=I{row_index}-F{row_index}"
+
         return {
-            "Название": self.name,
-            "Мана-кост": self.mana_cost,
-            "Описание": self.text,
-            "P/T": self.power_toughness,
-            "URL": self.url
+            "Название": self.name,            # A
+            "Мана-кост": self.mana_cost,      # B
+            "Описание": self.text,            # C
+            "P/T": self.power_toughness,      # D
+            "URL": self.url,                  # E
+            "Стоимость маны (m+U)": mana_pts, # F
+            "Стоимость силы (2P+2T)": pt_pts, # G
+            "Стоимость способностей (s)": 0,  # H
+            "Итоговая мощь": formula_power,   # I
+            "Баланс": formula_balance,        # J
         }
 
     def __repr__(self):
@@ -48,7 +93,7 @@ class ScryfallParser:
         filename = f"results/MTG {current_date} {n_cards} cards.xlsx"
 
         # 3. Создаем данные для таблицы
-        data = [card.to_dict() for card in self.cards_list]
+        data = [card.to_dict(i + 2) for i, card in enumerate(self.cards_list)]
         df = pd.DataFrame(data)
         
         # 4. Сохраняем
