@@ -8,11 +8,12 @@ from datetime import datetime
 from bs4 import BeautifulSoup
 
 class Card:
-    def __init__(self, name="", mana_cost="", text="", power_toughness=""):
+    def __init__(self, name="", mana_cost="", text="", power_toughness="", url=""):
         self.name = name
         self.mana_cost = mana_cost
         self.text = text
         self.power_toughness = power_toughness
+        self.url = url
 
     def to_dict(self):
         """Превращает объект в словарь для Pandas"""
@@ -20,7 +21,8 @@ class Card:
             "Название": self.name,
             "Мана-кост": self.mana_cost,
             "Описание": self.text,
-            "P/T": self.power_toughness
+            "P/T": self.power_toughness,
+            "URL": self.url
         }
 
     def __repr__(self):
@@ -41,7 +43,7 @@ class ScryfallParser:
             os.makedirs('results')
 
         # 2. Формируем имя файла: MTG dd-mm-yy N cards.xlsx
-        current_date = datetime.now().strftime("%d-%m-%y")
+        current_date = datetime.now().strftime("%d-%m-%y-%H-%M-%S")
         n_cards = len(self.cards_list)
         filename = f"results/MTG {current_date} {n_cards} cards.xlsx"
 
@@ -56,7 +58,7 @@ class ScryfallParser:
         except Exception as e:
             print(f"Ошибка при сохранении Excel: {e}")
 
-    def parse_card_page(self, html_content):
+    def parse_card_page(self, html_content, url):
         """Основной метод анализа страницы"""
         soup = BeautifulSoup(html_content, 'html.parser')
         
@@ -65,7 +67,8 @@ class ScryfallParser:
             name=self._extract_name(soup),
             mana_cost=self._extract_mana_cost(soup),
             text=self._extract_description(soup),
-            power_toughness=self._extract_pt(soup)
+            power_toughness=self._extract_pt(soup),
+            url=url
         )
         
         self.cards_list.append(new_card)
@@ -124,7 +127,7 @@ def download_and_parse_cards(n):
     if not os.path.exists('cards_html'):
         os.makedirs('cards_html')
 
-    base_url = "https://scryfall.com/random"
+    base_url = "https://scryfall.com/random?l=ru"
     parser = ScryfallParser() # Создаем экземпляр нашего парсера
     
     for i in range(n):
@@ -141,7 +144,7 @@ def download_and_parse_cards(n):
                     f.write(html_content)
                 
                 # 2. ПАРСИМ страницу и добавляем объект Card в список внутри parser.cards_list
-                parser.parse_card_page(html_content)
+                parser.parse_card_page(html_content, response.url)
                 
                 print(f"[{i+1}/{n}] Обработана карта: {card_url_slug}")
             else:
