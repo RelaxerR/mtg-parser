@@ -1,4 +1,4 @@
-# 🎴 MTG Card Analyzer
+# 🎴 MTG Card Parser
 
 [![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
@@ -11,7 +11,7 @@
 
 ## 📖 О проекте
 
-**MTG Card Analyzer** — это инструмент для игроков, коллекционеров и разработчиков, который помогает анализировать карты Magic: The Gathering по кастомной системе баллов.
+**MTG Card Parser** — это инструмент для игроков, коллекционеров и разработчиков, который помогает анализировать карты Magic: The Gathering по кастомной системе баллов.
 
 Проект автоматически:
 
@@ -41,8 +41,8 @@
 
 ```bash
 # Клонируйте репозиторий
-git clone https://github.com/relaxerr/mtg-analyzer.git
-cd mtg-analyzer
+git clone https://github.com/relaxerr/mtg-parser.git
+cd mtg-parser
 
 # Создайте виртуальное окружение
 python -m venv venv
@@ -183,6 +183,6 @@ MIT License — см. файл LICENSE для деталей.
 
 - Автор: Vyacheslav Kiselev
 - Email: relaxerrkis@gmail.com
-- Проект: github.com/relaxerr/mtg-analyzer
+- Проект: [github.com/relaxerr/mtg-parser](https://github.com/RelaxerR/mtg-parser)
 
 ---
